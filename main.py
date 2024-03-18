@@ -18,7 +18,7 @@ config = {
 imap_host = config.get('IMAP_HOST')
 imap_user = config.get('IMAP_USER')
 imap_pass = config.get('IMAP_PASS')
-allowed_senders = config.get('ALLOWED_SENDERS').split(',') or []
+allowed_senders = (config.get('ALLOWED_SENDERS') or "").split(',') or []
 
 # WebDAV configuration
 webdav_url = config.get('WEBDAV_URL')
@@ -72,6 +72,7 @@ def fetch_mail():
   print("Done.")
 
 schedule.every().minute.do(fetch_mail)
+print("Scheduler started.")
 
 while True:
     schedule.run_pending()
