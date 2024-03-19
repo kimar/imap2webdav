@@ -1,6 +1,5 @@
 import os
 import time
-from datetime import datetime
 from email.policy import default
 
 import imap_tools
@@ -63,7 +62,7 @@ def fetch_mail():
                 with open(file_path, 'rb') as f:
                     response = requests.put(
                         webdav_url + '/' +
-                        f"{datetime.now().strftime('%s')}_{file_name}",
+                        f"{msg.uid}_{file_name}",
                         data=f,
                         auth=HTTPBasicAuth(webdav_user, webdav_pass)
                     )
