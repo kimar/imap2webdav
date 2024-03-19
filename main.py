@@ -18,23 +18,31 @@ imap_host = config.get('IMAP_HOST')
 imap_user = config.get('IMAP_USER')
 imap_pass = config.get('IMAP_PASS')
 allowed_senders = (config.get('ALLOWED_SENDERS') or "").split(',') or []
+imap_use_idle = config.get('IMAP_USE_IDLE', 'false').lower() == 'true'
+imap_idle_timeout = 60
 
 # WebDAV configuration
 webdav_url = config.get('WEBDAV_URL')
 webdav_user = config.get('WEBDAV_USER')
 webdav_pass = config.get('WEBDAV_PASS')
 
-# Connect to IMAP server
 
+def start():
+    print("Starting up...")
 
-def fetch_mail():
+    def start_scheduler():
+        schedule.every().minute.do(fetch_and_parse_messages)
+        print("Scheduler started.")
+
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
+
     def move_to_trash(msg):
         mailbox.move(msg.uid, 'Trash')
         print(f"Moved email {msg.uid} to Trash.")
 
-    print("Fetching emails...")
-    with imap_tools.MailBox(imap_host).login(imap_user, imap_pass, initial_folder='INBOX') as mailbox:
-
+    def fetch_and_parse_messages():
         # Fetch all emails in the INBOX
         for msg in mailbox.fetch(imap_tools.A(all=True)):
             print(f"Processing email {msg.uid}, from {msg.from_}...")
@@ -75,17 +83,23 @@ def fetch_mail():
 
                 # Clean up: remove file from local system
                 os.remove(file_path)
+
+    # Connect to IMAP server
+    with imap_tools.MailBox(imap_host).login(imap_user, imap_pass, initial_folder='INBOX') as mailbox:
+        if imap_use_idle:
+            print(f'Using IDLE with timeout of {imap_idle_timeout} seconds.')
+            responses = mailbox.idle.wait(timeout=imap_idle_timeout)
+            if responses:
+                fetch_and_parse_messages()
+            else:
+                print("No new emails.")
+                start()
+        else:
+            print("Not using IDLE. Scheduling a fetch.")
+            start_scheduler()
+
     print("Done.")
 
 
-def main():
-    schedule.every().minute.do(fetch_mail)
-    print("Scheduler started.")
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
-
 if __name__ == '__main__':
-    main()
+    start()

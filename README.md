@@ -13,6 +13,7 @@ To configure the script you can use environment variables or an `.env` file usin
 IMAP_HOST=mail.example.com
 IMAP_USER=email@example.com
 IMAP_PASS=pa55w0rd
+IMAP_USE_IDLE=true
 ALLOWED_SENDERS=sender1@example.com,sender2@example.com # if empty then all senders are allowed
 
 # WebDAV
