@@ -78,9 +78,14 @@ def fetch_mail():
     print("Done.")
 
 
-schedule.every().minute.do(fetch_mail)
-print("Scheduler started.")
+def main():
+    schedule.every().minute.do(fetch_mail)
+    print("Scheduler started.")
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
+if __name__ == '__main__':
+    main()
